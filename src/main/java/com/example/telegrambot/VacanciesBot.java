@@ -26,7 +26,7 @@ public class VacanciesBot extends TelegramLongPollingBot {
   private final Map<Long, String> lastShownVacancyLevel = new HashMap<>();
 
     public VacanciesBot() {
-        super("6648795787:AAGBz5bpou9iN6s8uE7gyUkfS2n3U_CNoXQ");
+        super(System.getenv("botToken"));
     }
 
     @Override
@@ -164,15 +164,14 @@ public class VacanciesBot extends TelegramLongPollingBot {
 
     private ReplyKeyboard getMiddleVacanciesMenu() {
         List<InlineKeyboardButton> row = new ArrayList<>();
-        InlineKeyboardButton maVacancy = new InlineKeyboardButton();
-        maVacancy.setText("Middle Java developer at MA");
-        maVacancy.setCallbackData("vacancyId=3");
-        row.add(maVacancy);
 
-        InlineKeyboardButton googleVacancy = new InlineKeyboardButton();
-        googleVacancy.setText("Middle Dev at Google");
-        googleVacancy.setCallbackData("vacancyId=4");
-        row.add(googleVacancy);
+        List<VacancyDto> vacancies = vacancyService.getMiddleVacancies();
+        for(VacancyDto vacancy:vacancies) {
+            InlineKeyboardButton vacancyButton = new InlineKeyboardButton();
+            vacancyButton.setText(vacancy.getTitle());
+            vacancyButton.setCallbackData("vacancyId=" + vacancy.getId());
+            row.add(vacancyButton);
+        }
 
         InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
         keyboard.setKeyboard(List.of(row));
@@ -181,15 +180,14 @@ public class VacanciesBot extends TelegramLongPollingBot {
 
     private ReplyKeyboard getSeniorVacanciesMenu() {
         List<InlineKeyboardButton> row = new ArrayList<>();
-        InlineKeyboardButton maVacancy = new InlineKeyboardButton();
-        maVacancy.setText("Senior Java developer at MA");
-        maVacancy.setCallbackData("vacancyId=5");
-        row.add(maVacancy);
 
-        InlineKeyboardButton googleVacancy = new InlineKeyboardButton();
-        googleVacancy.setText("Senior Dev at Google");
-        googleVacancy.setCallbackData("vacancyId=6");
-        row.add(googleVacancy);
+        List<VacancyDto> vacancies = vacancyService.getSeniorVacancies();
+        for(VacancyDto vacancy:vacancies) {
+            InlineKeyboardButton vacancyButton = new InlineKeyboardButton();
+            vacancyButton.setText(vacancy.getTitle());
+            vacancyButton.setCallbackData("vacancyId=" + vacancy.getId());
+            row.add(vacancyButton);
+        }
 
         InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
         keyboard.setKeyboard(List.of(row));

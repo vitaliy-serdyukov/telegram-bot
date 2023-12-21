@@ -2,7 +2,6 @@ package com.example.telegrambot.service;
 
 import com.example.telegrambot.dto.VacancyDto;
 import jakarta.annotation.PostConstruct;
-import org.jvnet.hk2.annotations.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +26,14 @@ public class VacancyService {
 
     public List<VacancyDto> getJuniorVacancies() {
         return vacancies.values().stream().filter(v -> v.getTitle().toLowerCase().contains("junior")).toList();
+    }
+
+    public List<VacancyDto> getMiddleVacancies() {
+        return vacancies.values().stream().filter(v -> v.getTitle().toLowerCase().contains("middle")).toList();
+    }
+
+    public List<VacancyDto> getSeniorVacancies() {
+        return vacancies.values().stream().filter(v -> v.getTitle().toLowerCase().contains("senior")).toList();
     }
 
     public VacancyDto get(String id) {

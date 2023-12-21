@@ -3,7 +3,6 @@ package com.example.telegrambot.service;
 import com.example.telegrambot.dto.VacancyDto;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
-import org.jvnet.hk2.annotations.Service;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -15,7 +14,6 @@ import java.util.List;
 
 @Component //@Service
 public class VacanciesReaderService {
-
 
     public List<VacancyDto> getVacanciesFromFile(String fileName) {
         Resource resource = new ClassPathResource(fileName);
