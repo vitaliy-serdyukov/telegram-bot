@@ -13,13 +13,17 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class VacanciesBot extends TelegramLongPollingBot {
 
   @Autowired
   private VacancyService vacancyService;
+
+  private final Map<Long, String> lastShownVacancyLevel = new HashMap<>();
 
     public VacanciesBot() {
         super("6648795787:AAGBz5bpou9iN6s8uE7gyUkfS2n3U_CNoXQ");
@@ -35,63 +39,112 @@ public class VacanciesBot extends TelegramLongPollingBot {
                 String callbackData = update.getCallbackQuery().getData();
                 if ("showJuniorVacancies".equals(callbackData)) {
                     showJuniorVacancies(update);
-                }
-                else if ("showMiddleVacancies".equals(callbackData)) {
+                } else if ("showMiddleVacancies".equals(callbackData)) {
                     showMiddleVacancies(update);
-                }
-                else if ("showSeniorVacancies".equals(callbackData)) {
+                } else if ("showSeniorVacancies".equals(callbackData)) {
                     showSeniorVacancies(update);
-                }
-                else if (callbackData.startsWith("vacancyId=")) {
+                } else if (callbackData.startsWith("vacancyId=")) {
                     String id  = callbackData.split("=")[1];
                     showVacancyDescription(id, update);
+                } else if ("backToVacancies".equals(callbackData)){
+                    handleBackToVacanciesCommand(update);
+                } else if ("backToStartMenu".equals(callbackData)) {
+                     handleBackToStartCommand(update);
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException("Can't send message to user!", e);
         }
      }
+    private void handleBackToVacanciesCommand(Update update) { // throw an exception?
+        Long chatId = update.getCallbackQuery().getMessage().getChatId();
+        String level = lastShownVacancyLevel.get(chatId);
+
+        if("junior".equals(level)) {
+            showJuniorVacancies(update);
+        } else if("middle".equals(level)) {
+            showMiddleVacancies(update);
+        } else if ("senior".equals(level)){
+            showSeniorVacancies(update);
+        }
+    }
+
+     private void handleBackToStartCommand(Update update) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText("Choose title:");
+        sendMessage.setChatId(update.getCallbackQuery().getMessage().getChatId());
+        sendMessage.setReplyMarkup(getStartMenu());
+         try {
+             execute(sendMessage);
+         } catch (TelegramApiException e) {
+             throw new RuntimeException(e);
+         }
+     }
 
      private void showVacancyDescription(String id, Update update) throws TelegramApiException {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(update.getCallbackQuery().getMessage().getChatId());
-        sendMessage.setText("Vacancy description for vacancy with id = "  + id);
+        VacancyDto vacancy = vacancyService.get(id);
+        String description = vacancy.getShortDescription();
+        sendMessage.setText(description);
+        sendMessage.setReplyMarkup(getBackToVacanciesMenu());
         execute(sendMessage);
+     }
+
+     private ReplyKeyboard getBackToVacanciesMenu() {
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        InlineKeyboardButton backToVacanciesButton = new InlineKeyboardButton();
+        backToVacanciesButton.setText("Back to vacancies");
+        backToVacanciesButton.setCallbackData("backToVacancies");
+        row.add(backToVacanciesButton);
+
+        InlineKeyboardButton backToStartMenuButton = new InlineKeyboardButton();
+        backToStartMenuButton.setText("Back to start menu");
+        backToStartMenuButton.setCallbackData("backToStartMenu");
+        row.add(backToStartMenuButton);
+
+        return new InlineKeyboardMarkup(List.of(row));
      }
      private void showJuniorVacancies(Update update) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setText("Please choose vacancy");
-        sendMessage.setChatId(update.getCallbackQuery().getMessage().getChatId());
+        Long chatId = update.getCallbackQuery().getMessage().getChatId();
+        sendMessage.setChatId(chatId);
         sendMessage.setReplyMarkup(getJuniorVacanciesMenu());
          try {
              execute(sendMessage);
          } catch (TelegramApiException e) {
              throw new RuntimeException(e);
          }
+         lastShownVacancyLevel.put(chatId, "junior");
      }
 
      private void showMiddleVacancies(Update update) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setText("Please choose vacancy");
-        sendMessage.setChatId(update.getCallbackQuery().getMessage().getChatId());
+        Long chatId = update.getCallbackQuery().getMessage().getChatId();
+        sendMessage.setChatId(chatId);
         sendMessage.setReplyMarkup(getMiddleVacanciesMenu());
          try {
              execute(sendMessage);
          } catch (TelegramApiException e) {
              throw new RuntimeException(e);
          }
+         lastShownVacancyLevel.put(chatId, "middle");
      }
 
     private void showSeniorVacancies(Update update) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setText("Please choose vacancy");
-        sendMessage.setChatId(update.getCallbackQuery().getMessage().getChatId());
+        Long chatId = update.getCallbackQuery().getMessage().getChatId();
+        sendMessage.setChatId(chatId);
         sendMessage.setReplyMarkup(getSeniorVacanciesMenu());
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
+        lastShownVacancyLevel.put(chatId, "senior");
     }
     private ReplyKeyboard getJuniorVacanciesMenu() {
         List<InlineKeyboardButton> row = new ArrayList<>();
