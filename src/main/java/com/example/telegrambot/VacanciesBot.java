@@ -1,5 +1,8 @@
 package com.example.telegrambot;
 
+import com.example.telegrambot.dto.VacancyDto;
+import com.example.telegrambot.service.VacancyService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -14,6 +17,9 @@ import java.util.List;
 
 @Component
 public class VacanciesBot extends TelegramLongPollingBot {
+
+  @Autowired
+  private VacancyService vacancyService;
 
     public VacanciesBot() {
         super("6648795787:AAGBz5bpou9iN6s8uE7gyUkfS2n3U_CNoXQ");
@@ -89,15 +95,14 @@ public class VacanciesBot extends TelegramLongPollingBot {
     }
     private ReplyKeyboard getJuniorVacanciesMenu() {
         List<InlineKeyboardButton> row = new ArrayList<>();
-        InlineKeyboardButton maVacancy = new InlineKeyboardButton();
-        maVacancy.setText("Junior Java developer at MA");
-        maVacancy.setCallbackData("vacancyId=1");
-        row.add(maVacancy);
 
-        InlineKeyboardButton googleVacancy = new InlineKeyboardButton();
-        googleVacancy.setText("Junior Dev at Google");
-        googleVacancy.setCallbackData("vacancyId=2");
-        row.add(googleVacancy);
+        List<VacancyDto> vacancies = vacancyService.getJuniorVacancies();
+        for(VacancyDto vacancy:vacancies) {
+            InlineKeyboardButton vacancyButton = new InlineKeyboardButton();
+            vacancyButton.setText(vacancy.getTitle());
+            vacancyButton.setCallbackData("vacancyId=" + vacancy.getId());
+            row.add(vacancyButton);
+        }
 
         InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
         keyboard.setKeyboard(List.of(row));
